@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dataup.finance.dao.ApplyRecordDao">
+
+	<select id="queryAppyRecords"  resultType="com.dataup.finance.bean.ApplyRecord">
+		SELECT 
+		  car.ID id,
+		  car.APPLY_ID applyId,
+		  car.AUDIT_ID auditId,
+		  car.CUSTOM_ID customId,
+		  car.OWNER_ID ownerId,
+		  car.COLLECT_CLASS_PARENT_ID collectClassParentId,
+		  car.MONEY money,
+		  car.ORIGINAL_MONEY originalMoney,
+		  car.BALANCE_AMOUNT balanceAmount ,
+		  car.ADVANCE_AMOUNT advanceAmount,
+		  car.TYPE TYPE,
+		  car.STATUS STATUS,
+		  car.REMARK remark,
+		  car.CREATE_TIME createTime,
+		 <!--  cpp.ADVANCE_AMOUNT advanceAmount,
+		   cpp.BALANCE_AMOUNT balanceAmount, -->
+		  cpp.THRESHOLD_AMOUNT thresholdAmount
+		FROM
+		  CC_APPLY_RECORD car 
+		  LEFT JOIN CC_PROJECT_PRICE cpp 
+    	ON car.OWNER_ID = cpp.OWNER_ID WHERE 1 = 1
+		<if test="applyRecord.ownerId != null and  applyRecord.ownerId  != '' ">  
+	        and car.OWNER_ID = #{applyRecord.ownerId}  
+	    </if>  
+	   	<if test="applyRecord.status != -9">  
+	        and car.STATUS = #{applyRecord.status}  
+	    </if>
+	    <if test="applyRecord.type != -9">  
+	        and car.TYPE = #{applyRecord.type}  
+	    </if>
+	    <if  test="applyIdList != null ">
+	    	<choose>
+	    		<when test="applyIdList.size() > 0">
+	    			and  car.APPLY_ID IN 
+	    			 <foreach collection="applyIdList" item="applyId" index="index" open="(" separator="," close=")">
+	    			 	#{applyId}
+	    			 </foreach>
+	    		</when>
+	    		<otherwise>
+	    			and  car.APPLY_ID IS NULL
+	    		</otherwise>
+	    	</choose>
+	    </if>
+	    ORDER BY car.CREATE_TIME DESC
+	    <if test="limit != 0">
+	    	limit #{start},#{limit}
+	    </if>
+	</select>
+	
+	<select id="queryAppyRecordsCount"  resultType="long">
+		SELECT COUNT(*) FROM CC_APPLY_RECORD  WHERE 1 = 1
+		<if test="applyRecord.ownerId != null and  applyRecord.ownerId  != '' ">  
+	        and OWNER_ID = #{applyRecord.ownerId}  
+	    </if>  
+	   	<if test="applyRecord.status != -9">  
+	        and STATUS = #{applyRecord.status}  
+	    </if>
+	    <if test="applyRecord.type != -9">  
+	        and TYPE = #{applyRecord.type}  
+	    </if>  
+	    <if  test="applyIdList != null ">
+	    	<choose>
+	    		<when test="applyIdList.size() > 0">
+	    			and  APPLY_ID IN 
+	    			 <foreach collection="applyIdList" item="applyId" index="index" open="(" separator="," close=")">
+	    			 	#{applyId}
+	    			 </foreach>
+	    		</when>
+	    		<otherwise>
+	    			and  APPLY_ID IS NULL
+	    		</otherwise>
+	    	</choose>
+	    </if> 
+	</select>
+	
+	<select id="checkApplyIsAudit"  resultType="long">
+		SELECT COUNT(*) FROM CC_APPLY_RECORD  WHERE CUSTOM_ID = #{customId} AND OWNER_ID = #{ownerId} AND STATUS = 0
+		<if test="collectClassParentId != null and  collectClassParentId  != '' ">  
+	        and COLLECT_CLASS_PARENT_ID = #{collectClassParentId}  
+	    </if>  
+	  </select>
+	<insert id="saveApplyRecord" parameterType="com.dataup.finance.bean.ApplyRecord">
+		INSERT INTO CC_APPLY_RECORD 
+		(ID,APPLY_ID,AUDIT_ID,CUSTOM_ID,OWNER_ID,MONEY,ORIGINAL_MONEY,BALANCE_AMOUNT,ADVANCE_AMOUNT,TYPE,COLLECT_CLASS_PARENT_ID,PROCESS_DEFINITION_ID,PROCESS_INSTANCE_ID,REMARK,CREATE_TIME)
+		values (#{id},#{applyId},#{auditId},#{customId},#{ownerId},#{money},#{originalMoney},#{balanceAmount},#{advanceAmount},#{type},#{collectClassParentId},#{processDefinitionId},#{processInstanceId},#{remark},(UNIX_TIMESTAMP() * 1000))
+	</insert>
+	
+	<select id="queryNotice"  resultType="com.dataup.finance.bean.Notice">
+		SELECT 
+		  CASE
+		    WHEN STATUS = 0 
+		    THEN 'auditing' 
+		    WHEN STATUS = 1 
+		    THEN 'auditPass' 
+		    WHEN STATUS = 2 
+		    THEN 'auditNoPass' 
+		    ELSE 'other' 
+		  END AS typeName,
+		  COUNT(STATUS) AS typeCount 
+		FROM
+		  cc_apply_record 
+		WHERE APPLY_ID = #{userId}
+		GROUP BY STATUS 
+	</select>
+	<select id="queryCollectClassPricesByApplyRecordId"  resultType="com.dataup.finance.bean.CollectClassPrice">
+		 SELECT 
+		  ID id,
+		  OWNER_ID ownerId,
+		  COLLECT_CLASS_PARENT_ID collectClassParentId,
+		  COLLECT_CLASS_ID collectClassId,
+		  USER_MONEY_MIN userMoneyMin,
+		  USER_MONEY_MAX userMoneyMax,
+		  CUSTOM_MONEY_MIN customMoneyMin,
+		  CUSTOM_MONEY_MAX customMoneyMax,
+		  ORIGINAL_USER_MONEY_MIN originalUserMoneyMin,
+		  ORIGINAL_USER_MONEY_MAX originalUserMoneyMax,
+		  ORIGINAL_CUSTOM_MONEY_MIN originalCustomMoneyMin,
+		  ORIGINAL_CUSTOM_MONEY_MAX originalCustomMoneyMax 
+		FROM
+		  cc_collect_class_price_log 
+        <where>
+			APPLY_RECORD_ID = #{applyRecordId}
+		</where>
+	</select>
+	
+	<select id="queryAuditRecord"  resultType="com.dataup.finance.bean.ApplyRecord">
+		SELECT 
+		  ID id,
+		  APPLY_ID applyId,
+		  AUDIT_ID auditId,
+		  CUSTOM_ID customId,
+		  OWNER_ID ownerId,
+		  COLLECT_CLASS_PARENT_ID collectClassParentId,
+		  MONEY money,
+		  ORIGINAL_MONEY originalMoney,
+		  TYPE type,
+		  STATUS status,
+		  REMARK remark,
+		  AUDIT_OPINION auditOpinion,
+		  CREATE_TIME createTime 
+		FROM
+		  cc_apply_record 
+        <where>
+			ID = #{applyRecordId}
+		</where>
+	</select>
+</mapper>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="30">
+
+	<Appenders>
+		<Console name="Console" target="SYSTEM_OUT">
+			<PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
+		</Console>
+		<RollingRandomAccessFile name="outRollingRandomAccessFile"
+			fileName="/usr/local/tomcat/logs/finance/out.log"
+			filePattern="/usr/local/tomcat/logs/finance/$${date:yyyy-MM}/out-%d{MM-dd-yyyy}-%i.log.gz">
+			<PatternLayout>
+				<Pattern>%d{DEFAULT} %p %c{1.} [%t] %m%n</Pattern>
+			</PatternLayout>
+			<Policies>
+				<TimeBasedTriggeringPolicy interval="1"
+					modulate="true" />
+			</Policies>
+			<DefaultRolloverStrategy max="30" />
+		</RollingRandomAccessFile>
+		<RollingRandomAccessFile name="msgRollingRandomAccessFile"
+			fileName="/usr/local/tomcat/logs/finance/msg.log"
+			filePattern="/usr/local/tomcat/logs/finance/$${date:yyyy-MM}/msg-%d{MM-dd-yyyy}-%i.log.gz">
+			<PatternLayout>
+				<Pattern>%d{DEFAULT} %p %c{1.} [%t] %m%n</Pattern>
+			</PatternLayout>
+			<Policies>
+				<TimeBasedTriggeringPolicy interval="1"
+					modulate="true" />
+			</Policies>
+			<DefaultRolloverStrategy max="30" />
+		</RollingRandomAccessFile>
+		<RollingRandomAccessFile name="errRollingRandomAccessFile"
+			fileName="/usr/local/tomcat/logs/finance/err.log"
+			filePattern="/usr/local/tomcat/logs/finance/$${date:yyyy-MM}/err-%d{MM-dd-yyyy}-%i.log.gz">
+			<ThresholdFilter level="ERROR" onMatch="ACCEPT"
+				onMismatch="DENY" />
+			<PatternLayout>
+				<Pattern>%d{DEFAULT} %p %c{1.} [%t] %m%n</Pattern>
+			</PatternLayout>
+			<Policies>
+				<TimeBasedTriggeringPolicy interval="6"
+					modulate="true" />
+			</Policies>
+			<DefaultRolloverStrategy max="125" />
+		</RollingRandomAccessFile>
+	</Appenders>
+	<Loggers>
+		<logger name="org.apache.ibatis" level="info">
+		</logger>
+		<logger name="java.sql" level="info">
+		</logger>
+		<logger name="com.dataup.finance" level="info">
+		</logger>
+		<logger name="com" level="ERROR">
+			<AppenderRef ref="errRollingRandomAccessFile" />
+		</logger>
+		<logger name="org" level="ERROR">
+			<AppenderRef ref="errRollingRandomAccessFile" />
+		</logger>
+		<logger name="com.dataup.finance.service" level="info">
+		</logger>
+		<logger name="org.crazycake.shiro" level="info"/>
+		<Root level="info">
+			<AppenderRef ref="outRollingRandomAccessFile" />
+			<AppenderRef ref="Console" />
+		</Root>
+	</Loggers>
+</Configuration>
+

@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dataup.finance.dao.CollectClassPriceDao">
+
+	<select id="queryCollectClassPrice"  resultType="com.dataup.finance.bean.CollectClassPrice">
+		SELECT ID id,OWNER_ID ownerId,COLLECT_CLASS_PARENT_ID collectClassParentId,COLLECT_CLASS_ID collectClassId,USER_MONEY_MIN userMoneyMin,USER_MONEY_MAX userMoneyMax,CUSTOM_MONEY_MIN customMoneyMin,CUSTOM_MONEY_MAX customMoneyMax FROM CC_COLLECT_CLASS_PRICE  
+		<where>
+			OWNER_ID = #{ownerId}
+			AND COLLECT_CLASS_PARENT_ID = #{collectClassParentId}
+			AND COLLECT_CLASS_ID = #{collectClassId}
+		</where>
+	</select>
+	
+	<select id="queryCollectClassPrices"  resultType="com.dataup.finance.bean.CollectClassPrice">
+		SELECT ID id,OWNER_ID ownerId,COLLECT_CLASS_PARENT_ID collectClassParentId,COLLECT_CLASS_ID collectClassId,USER_MONEY_MIN userMoneyMin,USER_MONEY_MAX userMoneyMax,CUSTOM_MONEY_MIN customMoneyMin,CUSTOM_MONEY_MAX customMoneyMax FROM CC_COLLECT_CLASS_PRICE  
+		<where>
+			OWNER_ID = #{ownerId}
+			AND COLLECT_CLASS_PARENT_ID = #{collectClassParentId}
+		</where>
+	</select>
+	
+	<select id="queryAllCollectClassPrices"  resultType="com.dataup.finance.bean.CollectClassPrice">
+		SELECT ID id,OWNER_ID ownerId,COLLECT_CLASS_PARENT_ID collectClassParentId,COLLECT_CLASS_ID collectClassId,USER_MONEY_MIN userMoneyMin,USER_MONEY_MAX userMoneyMax,CUSTOM_MONEY_MIN customMoneyMin,CUSTOM_MONEY_MAX customMoneyMax FROM CC_COLLECT_CLASS_PRICE 
+	</select>
+	
+	<select id="queryCollectClassPricesByApplyRecordId"  resultType="com.dataup.finance.bean.CollectClassPrice">
+		 SELECT 
+		  ID id,
+		  OWNER_ID ownerId,
+		  COLLECT_CLASS_PARENT_ID collectClassParentId,
+		  COLLECT_CLASS_ID collectClassId,
+		  USER_MONEY_MIN userMoneyMin,
+		  USER_MONEY_MAX userMoneyMax,
+		  CUSTOM_MONEY_MIN customMoneyMin,
+		  CUSTOM_MONEY_MAX customMoneyMax,
+		  ORIGINAL_USER_MONEY_MIN originalUserMoneyMin,
+		  ORIGINAL_USER_MONEY_MAX originalUserMoneyMax,
+		  ORIGINAL_CUSTOM_MONEY_MIN originalCustomMoneyMin,
+		  ORIGINAL_CUSTOM_MONEY_MAX originalCustomMoneyMax 
+		FROM
+		  cc_collect_class_price_log 
+        <where>
+			APPLY_RECORD_ID = #{applyRecordId}
+		</where>
+	</select>
+	
+	<!-- 暂未使用 -->
+	<insert id="saveCollectClassPrices" parameterType="java.util.List">
+		INSERT INTO CC_COLLECT_CLASS_PRICE 
+		(ID,OWNER_ID,COLLECT_CLASS_PARENT_ID,COLLECT_CLASS_ID,USER_MONEY_MIN,USER_MONEY_MAX,CUSTOM_MONEY_MIN,CUSTOM_MONEY_MAX,CREATE_TIME) values
+		<foreach collection="collectClassPrices" item="ccp" index="index"
+			separator=",">
+			(#{ccp.id},#{ccp.ownerId},#{ccp.collectClassParentId},#{ccp.collectClassId},#{ccp.userMoneyMin},#{ccp.userMoneyMax},#{ccp.customMoneyMin},#{ccp.customMoneyMax},(UNIX_TIMESTAMP() * 1000))
+		</foreach>
+	</insert>
+	<!-- 暂未使用 -->
+	<delete id="deleteCollectClassPrices" >
+		DELEte FROM CC_COLLECT_CLASS_PRICE
+		<where>OWNER_ID=#{ownerId} AND COLLECT_CLASS_PARENT_ID = #{collectClassParentId}</where>
+	</delete>
+	
+	<insert id="saveCollectClassPriceLogs" parameterType="java.util.List">
+		INSERT INTO CC_COLLECT_CLASS_PRICE_LOG
+		(ID,APPLY_RECORD_ID,OWNER_ID,COLLECT_CLASS_PARENT_ID,COLLECT_CLASS_ID,USER_MONEY_MIN,USER_MONEY_MAX,CUSTOM_MONEY_MIN,CUSTOM_MONEY_MAX,ORIGINAL_USER_MONEY_MIN,ORIGINAL_USER_MONEY_MAX,ORIGINAL_CUSTOM_MONEY_MIN,ORIGINAL_CUSTOM_MONEY_MAX,CREATE_TIME) values
+		<foreach collection="collectClassPrices" item="ccp" index="index"
+			separator=",">
+			(#{ccp.id},#{ccp.applyRecordId},#{ccp.ownerId},#{ccp.collectClassParentId},#{ccp.collectClassId},#{ccp.userMoneyMin},#{ccp.userMoneyMax},#{ccp.customMoneyMin},#{ccp.customMoneyMax},#{ccp.originalUserMoneyMin},#{ccp.originalUserMoneyMax},#{ccp.originalCustomMoneyMin},#{ccp.originalCustomMoneyMax},(UNIX_TIMESTAMP() * 1000))
+		</foreach>
+	</insert>
+	
+	<select id="queryProjectPrice" resultType="com.dataup.finance.bean.ProjectPrice">
+		SELECT ID id,CUSTOM_ID customId,OWNER_ID ownerId,THRESHOLD_AMOUNT thresholdAmount,BALANCE_AMOUNT balanceAmount,ADVANCE_AMOUNT advanceAmount,CREATE_TIME createTime,UPDATE_TIME updateTime FROM CC_PROJECT_PRICE
+		<where>OWNER_ID = #{ownerId}</where>
+	</select>
+	
+	<select id="queryProjectPrices" resultType="com.dataup.finance.bean.ProjectPrice">
+		SELECT ID id,CUSTOM_ID customId,OWNER_ID ownerId,THRESHOLD_AMOUNT thresholdAmount,BALANCE_AMOUNT balanceAmount,ADVANCE_AMOUNT advanceAmount,CREATE_TIME createTime,UPDATE_TIME updateTime FROM CC_PROJECT_PRICE WHERE 1 = 1
+		<if test="ownerId != null and ownerId != '' ">
+			AND OWNER_ID = #{ownerId}
+		</if>
+		<if test="customId != null and customId != '' ">
+			AND CUSTOM_ID = #{customId}
+		</if>
+	</select>
+	
+	<insert id="saveProjectPrice" parameterType="com.dataup.finance.bean.ProjectPrice">
+		INSERT INTO CC_PROJECT_PRICE 
+		(ID,CUSTOM_ID,OWNER_ID,THRESHOLD_AMOUNT,BALANCE_AMOUNT,ADVANCE_AMOUNT,CREATE_TIME) 
+		values
+		(#{id},#{customId},#{ownerId},#{thresholdAmount},#{balanceAmount},#{advanceAmount},(UNIX_TIMESTAMP() * 1000))
+	</insert>
+	
+	<!-- 暂未使用 -->
+	<update id="updateProjectPrice" parameterType="com.dataup.finance.bean.ProjectPrice">
+		UPDATE CC_PROJECT_PRICE 
+		SET 
+		THRESHOLD_AMOUNT = #{thresholdAmount},
+		BALANCE_AMOUNT = #{balanceAmount},
+		 ADVANCE_AMOUNT = #{advanceAmount},
+		UPDATE_TIME = (UNIX_TIMESTAMP() * 1000)
+		<where>OWNER_ID = #{ownerId}</where>
+	</update>
+	
+	<insert id="saveTaskFlows" parameterType="java.util.List">
+		INSERT INTO CC_TASK_FLOW 
+		(ID,TASK_ID,OWNER_ID,COLLECT_CLASS_PARENT_ID,COLLECT_CLASS_ID,USER_MONEY,CUSTOM_MONEY_MIN,CUSTOM_MONEY_MAX,STATUS,CREATE_TIME) values
+		<foreach collection="taskFlows" item="tf" index="index"
+			separator=",">
+			(#{tf.id},#{tf.taskId},#{tf.ownerId},#{tf.collectClassParentId},#{tf.collectClassId},#{tf.userMoney},#{tf.customMoneyMin},#{tf.customMoneyMax},#{tf.status},(UNIX_TIMESTAMP() * 1000))
+		</foreach>
+	</insert>
+	
+	<select id="queryTotalPay" resultType="Double">
+		SELECT SUM(CUSTOM_MONEY_MAX) totalPay FROM CC_TASK_FLOW 
+		<where>OWNER_ID = #{ownerId} AND STATUS = 1</where>
+	</select>
+	<insert id="saveProjectPriceLog" parameterType="com.dataup.finance.bean.ProjectPriceLog">
+		INSERT INTO CC_PROJECT_PRICE_LOG
+		(CUSTOM_ID,OWNER_ID,THRESHOLD_AMOUNT,BALANCE_AMOUNT,ADVANCE_AMOUNT,OPERATE_ID,OPERATE_AMOUNT,OPERATE_TYPE,STATUS,CREATE_TIME) 
+		values
+		(#{customId},#{ownerId},#{thresholdAmount},#{balanceAmount},#{advanceAmount},#{operateId},#{operateAmount},#{operateType},#{status},(UNIX_TIMESTAMP() * 1000))
+	</insert>
+	
+	<select id="getCustomDebitLog"  resultType="long">
+		SELECT COUNT(ID) FROM cc_project_price_log WHERE  OWNER_ID = #{ownerId} AND OPERATE_ID = #{taskId} AND STATUS = 1
+	</select>
+</mapper>
